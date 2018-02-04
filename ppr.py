@@ -5,18 +5,16 @@ Spyder Editor
 This is a temporary script file.
 """
 
-import numpy
+#import numpy
 import openpyxl
 import pandas
-import json
+#import json
 import base64
-import smtplib,ssl
+#import smtplib,ssl
 from io import BytesIO
-import colorsys
-from openpyxl.styles.borders import Border, Side
-
-from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
-from openpyxl import Workbook
+#import colorsys
+from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
+#from openpyxl import Workbook
 
 
 def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment=None):
@@ -74,6 +72,7 @@ def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment
 
 medium = Side(border_style="medium", color="8a98ad")
 double = Side(border_style="double", color="ff0000")
+accounting_format = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)'
 
 brdr2 = Border(top=medium, left=medium, right=medium, bottom=medium)
 font = Font(b=True, color="FF0000")
@@ -109,7 +108,7 @@ df = pandas.read_json(json_query)
 def checkValues(value1,value2):
     return value1 == value2
 
-bg_rgb = ['68BD45', '329bd6','ff0000']
+bg_rgb = ['68BD45', '329bd6','ffffe0']
 bg_rgb_len = len(bg_rgb)
 bg_argb = ["FF" + str(x) for x in bg_rgb]
 
@@ -226,15 +225,17 @@ total_column = []
 for i in range(first_data_col['index'],column):
     cells[i].font = openpyxl.styles.Font(italic=True, bold=True)
     cells[i].fill = PatternFill("solid", bg_argb[color_counter])
-    cells[i].alignment = Alignment(horizontal="right")
+    cells[i].alignment = Alignment(horizontal="center")
+    cells[i].border = brdr2
     if cells[i].value == 'Total':
         total_column.append(i)
 
 #MANIPUTATE TOTALS
 
 for i in range(len(total_column)):
-    for j in range(first_data_row['index'],last_data_row['index']):
-        ws.cell(column=total_column[i]+1, row=j).fill = PatternFill("solid", '88ffe300')
+    for j in range(first_data_row['cell'],last_data_row['cell']+1):
+        ws.cell(column=total_column[i]+1, row=j).fill = PatternFill("solid", 'ffffe0')
+        ws.cell(column=total_column[i]+1, row=j).border = Border(left=medium, right=medium)
 
     
 wb.save('output_test2.xlsx')
