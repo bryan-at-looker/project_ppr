@@ -7,14 +7,14 @@ This is a temporary script file.
 
 #import numpy
 import openpyxl
-import pandas
-#import json
+import json
+#import pandas
 import base64
-#import smtplib,ssl
+#import os
 from io import BytesIO
-#import colorsys
+from sendgrid.helpers.mail import *
+from sendgrid import *
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
-#from openpyxl import Workbook
 
 
 def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment=None):
@@ -79,17 +79,10 @@ font = Font(b=True, color="FF0000")
 al = Alignment(horizontal="center", vertical="center")
 
 
-json_query = '/Users/Looker/python/tenx ppr/webhook_looker_simple.json'
-#with open(json_query) as data_file:    
-#  d = json.load(data_file) 
-df = pandas.read_json(json_query) 
-df_data = pandas.read_json(df.attachment['data'])
-
-
 
 
 json_query = '/Users/Looker/python/tenx ppr/webhook_looker_xlsx.json'
-df = pandas.read_json(json_query) 
+#df = pandas.read_json(json_query) 
 # df_query = pandas.DataFrame(df.scheduled_plan['query'])
 #df.scheduled_plan['query']
 
@@ -103,6 +96,10 @@ df = pandas.read_json(json_query)
 
 #wb = openpyxl.load_workbook('testfile.xlsx')
 
+with open(json_query, 'r') as f:
+    wh = json.load(f)
+    
+data = wh['attachment']['data']
 
 
 def checkValues(value1,value2):
@@ -112,7 +109,7 @@ bg_rgb = ['68BD45', '329bd6','ffffe0']
 bg_rgb_len = len(bg_rgb)
 bg_argb = ["FF" + str(x) for x in bg_rgb]
 
-wb = openpyxl.load_workbook(filename=BytesIO(base64.b64decode(df.attachment['data'])))
+wb = openpyxl.load_workbook(filename=BytesIO(base64.b64decode(data)))
 # OPEN WORKBOOK IN MEMORY BY CALLING THE ATTACHMENT>>DATA AND DECODING
 ws = wb.active
 
@@ -239,3 +236,29 @@ for i in range(len(total_column)):
 
     
 wb.save('output_test2.xlsx')
+
+sg = sendgrid.SendGridAPIClient(apikey='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')
+#client = SendGridAPIClient(apikey='')
+#message = Mail()
+
+from_email = Email("bryan@looker.com")
+to_email = Email("bryan.weber@looker.com")
+subject = "Your Formatted Excel Sheet is Here"
+content = Content("text/plain", "bam who needs a pixel perfect reporting tool?")
+mail = Mail(from_email, subject, to_email, content)
+
+
+attachment = Attachment()
+attachment.content = base64.b64encode(openpyxl.writer.excel.save_virtual_workbook(wb))
+attachment.type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' #wb.mime_type 
+attachment.filename = "formatted_report.xlsx"
+attachment.disposition = "attachment"
+attachment.content_id = "report"
+
+mail.add_attachment(attachment)
+
+response = sg.client.mail.send.post(request_body=mail.get())
+
+print(response.status_code)
+print(response.body)
+print(response.headers)
