@@ -237,7 +237,7 @@ for i in range(len(total_column)):
     
 wb.save('output_test2.xlsx')
 
-sg = sendgrid.SendGridAPIClient(apikey='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')
+sg = sendgrid.SendGridAPIClient(apikey='<APIKEY>')
 #client = SendGridAPIClient(apikey='')
 #message = Mail()
 
